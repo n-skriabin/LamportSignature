@@ -50,18 +50,12 @@ namespace LamportSignature
 
         static void Encrypt()
         {
-            //Console.WriteLine("Please, enter path to source file: ");
-
-            //string soursePath = Console.ReadLine();
-            //string destinationPath = Console.ReadLine();
-
             Directory.CreateDirectory($"C:\\LamportSignature");
 
             string privateKeyPath = $"C:\\LamportSignature\\privateKey.txt";
             string publicKeyPath = $"C:\\LamportSignature\\publicKey.txt";
             string signedFileOutputPath = $"C:\\LamportSignature\\signedFile.txt";
 
-            //byte[] readText = File.ReadAllLines(sourcePath).Select(byte.Parse).ToArray();
             privateKey = new int[256, 2];
             publicKey = new byte[256, 2, 32];
             rnd = new Random();
