@@ -50,7 +50,7 @@ namespace LamportSignature
 
         static void Encrypt()
         {
-            Console.Write("Please, enter path to source file: ");
+            Console.WriteLine("Please, enter path to source file: ");
 
             //string soursePath = Console.ReadLine();
             //string destinationPath = Console.ReadLine();
@@ -152,7 +152,7 @@ namespace LamportSignature
                 }
             }
 
-            return;
+            Console.WriteLine($"Your file is signed. All files are saved along the path: C:\\Users\\UsrName\\Desktop\\source\n");
         }
 
         static void Check()
