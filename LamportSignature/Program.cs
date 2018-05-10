@@ -50,14 +50,16 @@ namespace LamportSignature
 
         static void Encrypt()
         {
-            Console.WriteLine("Please, enter path to source file: ");
+            //Console.WriteLine("Please, enter path to source file: ");
 
             //string soursePath = Console.ReadLine();
             //string destinationPath = Console.ReadLine();
 
-            string privateKeyPath = $"C:\\Users\\Nick\\Desktop\\source\\privateKey.txt";
-            string publicKeyPath = $"C:\\Users\\Nick\\Desktop\\source\\publicKey.txt";
-            string signedFileOutputPath = $"C:\\Users\\Nick\\Desktop\\source\\signedFile.txt";
+            Directory.CreateDirectory($"C:\\LamportSignature");
+
+            string privateKeyPath = $"C:\\LamportSignature\\privateKey.txt";
+            string publicKeyPath = $"C:\\LamportSignature\\publicKey.txt";
+            string signedFileOutputPath = $"C:\\LamportSignature\\signedFile.txt";
 
             //byte[] readText = File.ReadAllLines(sourcePath).Select(byte.Parse).ToArray();
             privateKey = new int[256, 2];
@@ -116,7 +118,7 @@ namespace LamportSignature
                 }
             }
 
-            using (FileStream fstream = File.OpenRead($"C:\\Users\\Nick\\Desktop\\source\\sourceFile.txt"))
+            using (FileStream fstream = File.OpenRead($"C:\\LamportSignature\\sourceFile.txt"))
             {
                 sourceFile = new byte[fstream.Length];
                 fstream.Read(sourceFile, 0, sourceFile.Length);
@@ -152,7 +154,7 @@ namespace LamportSignature
                 }
             }
 
-            Console.WriteLine($"Your file is signed. All files are saved along the path: C:\\Users\\UsrName\\Desktop\\source\n");
+            Console.WriteLine($"Your file is signed. All files are saved along the path: C:\\LamportSignature\n");
         }
 
         static void Check()
