@@ -13,10 +13,9 @@ namespace LamportSignature
     {
         static int way = 0;
         static int[,] privateKey;
-        static byte[,,] publicKey;
+        static int[,] publicKey;
         static byte[] sourceFile;
-        static string textFromFile;
-        static int[] hashedSourceFile;
+        static int[] signature = new int[256];
 
         static BitArray bitsArraySourceFile;
 
@@ -54,10 +53,12 @@ namespace LamportSignature
 
             string privateKeyPath = $"C:\\LamportSignature\\privateKey.txt";
             string publicKeyPath = $"C:\\LamportSignature\\publicKey.txt";
-            string signedFileOutputPath = $"C:\\LamportSignature\\signedFile.txt";
+            string signaturePath = $"C:\\LamportSignature\\signature.txt";
+
+            signature = new int[256];
 
             privateKey = new int[256, 2];
-            publicKey = new byte[256, 2, 32];
+            publicKey = new int[256, 2];
             rnd = new Random();
 
             for (int i = 0; i <= 255; i++)
@@ -74,7 +75,7 @@ namespace LamportSignature
                 {
                     for (int j = 0; j <= 1; j++)
                     {
-                        sw.Write(privateKey[i, j] + "|");
+                        sw.Write(privateKey[i, j] + "| ");
                     }
                     sw.WriteLine();
                 }
@@ -88,11 +89,8 @@ namespace LamportSignature
                 {
                     byte[] byteValue;
                     byteValue = sha256.ComputeHash(BitConverter.GetBytes(privateKey[i, j]));
-
-                    for (int z = 0; z <= 31; z++)
-                    {
-                        publicKey[i, j, z] = byteValue[z];
-                    }
+                    var buff = BitConverter.ToInt32(byteValue, 0);
+                    publicKey[i, j] = buff;
                 }
             }
 
@@ -101,12 +99,10 @@ namespace LamportSignature
                 for (int i = 0; i <= 255; i++)
                 {
                     for (int j = 0; j <= 1; j++)
-                    {
-                        for (int z = 0; z <= 31; z++)
-                        {
-                            sw.Write(publicKey[i, j, z] + " ");
-                        }
-                        sw.Write("|");
+                    {                    
+                        sw.Write(publicKey[i, j] + " ");
+                        
+                        sw.Write("| ");
                     }
                     sw.WriteLine();
                 }
@@ -116,35 +112,30 @@ namespace LamportSignature
             {
                 sourceFile = new byte[fstream.Length];
                 fstream.Read(sourceFile, 0, sourceFile.Length);
-                textFromFile = Encoding.Default.GetString(sourceFile);
             }
 
             sourceFile = sha256.ComputeHash(sourceFile);
 
             bitsArraySourceFile = new BitArray(sourceFile);
 
-            hashedSourceFile = new int[256];
-
             for (int i = 0; i <= 255; i++)
             {
                 if (bitsArraySourceFile[i]) //true
                 {
-                    hashedSourceFile[i] = privateKey[i, 0];
-
+                    signature[i] = privateKey[i, 0];
                 }
 
                 if (!bitsArraySourceFile[i]) //false
                 {
-                    hashedSourceFile[i] = privateKey[i, 1];
+                    signature[i] = privateKey[i, 1];
                 }
             }
 
-            using (StreamWriter sw = new StreamWriter(signedFileOutputPath, false, Encoding.Default))
+            using (StreamWriter sw = new StreamWriter(signaturePath, false, Encoding.Default))
             {
                 for (int i = 0; i <= 255; i++)
                 {
-                    sw.Write(hashedSourceFile[i]);
-                    sw.WriteLine();
+                    sw.WriteLine(signature[i]);
                 }
             }
 
@@ -153,7 +144,55 @@ namespace LamportSignature
 
         static void Check()
         {
+            publicKey = new int[256, 2];
+            int[] publicKeyHash = new int[256];
+            SHA256 sha256 = SHA256.Create();
 
+            using (FileStream fstream = File.OpenRead($"C:\\LamportSignature\\sourceFile.txt"))
+            {
+                sourceFile = new byte[fstream.Length];
+                fstream.Read(sourceFile, 0, sourceFile.Length);
+            }
+
+            sourceFile = sha256.ComputeHash(sourceFile);
+
+            bitsArraySourceFile = new BitArray(sourceFile);
+
+            string[] readPublicKey = File.ReadAllLines($"C:\\LamportSignature\\publicKey.txt");
+            string[] readSignature = File.ReadAllLines($"C:\\LamportSignature\\signature.txt");
+
+            for (int i = 0; i <= 255 ; i++)
+            {
+                signature[i] = BitConverter.ToInt32(sha256.ComputeHash(BitConverter.GetBytes(Convert.ToInt32(readSignature[i]))), 0);
+            }
+
+            for (int i = 0; i <= 255; i++)
+            {
+                var buffer = readPublicKey[i].Split(' ');
+
+                publicKey[i, 0] = Convert.ToInt32(buffer[0]);
+
+                publicKey[i, 1] = Convert.ToInt32(buffer[2]);
+            }
+
+            int[] conformitySourceFileFromPublicKey = new int[256];
+
+            for (int i = 0; i <= 255; i++)
+            {
+                if (bitsArraySourceFile[i]) //true
+                {
+                    conformitySourceFileFromPublicKey[i] = publicKey[i, 0];
+                    publicKeyHash[i] = BitConverter.ToInt32(sha256.ComputeHash(BitConverter.GetBytes(conformitySourceFileFromPublicKey[i])), 0);
+                }
+
+                if (!bitsArraySourceFile[i]) //false
+                {
+                    conformitySourceFileFromPublicKey[i] = publicKey[i, 1];
+                    publicKeyHash[i] = BitConverter.ToInt32(sha256.ComputeHash(BitConverter.GetBytes(conformitySourceFileFromPublicKey[i])), 0);
+                }
+            }
+
+            return;
         }
 
         static int InputValue()
