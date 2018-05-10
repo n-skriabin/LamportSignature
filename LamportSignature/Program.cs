@@ -25,20 +25,20 @@ namespace LamportSignature
             while (way == 0)
             {
                 Console.Write("Please, choose the way:\n1 - signing a file\n2 - check signing for file\nany number - exit\n\n>");
-                way = InputValue();
+                way = Validation.InputValue();
 
                 if (way == 1)
                 {
-                    Encrypt();
+                    Signing();
                 }
 
                 if (way == 2)
                 {
-                    Check();
+                    CheckSigning();
                 }
 
                 Console.Write("Do you want to exit from program:\n1 - yes\n2 - no\n\n>");
-                way = InputValue();
+                way = Validation.InputValue();
 
                 if (way != 1)
                 {
@@ -47,7 +47,7 @@ namespace LamportSignature
             }
         }
 
-        static void Encrypt()
+        static void Signing()
         {
             Directory.CreateDirectory($"C:\\LamportSignature");
 
@@ -142,7 +142,7 @@ namespace LamportSignature
             Console.WriteLine($"Your file is signed. All files are saved along the path: C:\\LamportSignature\n");
         }
 
-        static void Check()
+        static void CheckSigning()
         {
             publicKey = new int[256, 2];
             int[] publicKeyHash = new int[256];
@@ -193,21 +193,6 @@ namespace LamportSignature
             }
 
             return;
-        }
-
-        static int InputValue()
-        {
-            bool check = Int32.TryParse(Console.ReadLine(), out int res);
-            Console.WriteLine();
-
-            while (!check)
-            {
-                Console.Write("Please, input only int32 value (-2147483648..2147483647)\n\n>");
-                check = Int32.TryParse(Console.ReadLine(), out res);
-                Console.WriteLine();
-            }
-
-            return res;
         }
     }
 }
