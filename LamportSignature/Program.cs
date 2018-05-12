@@ -189,27 +189,28 @@ namespace LamportSignature
                 }
             }
 
-            using (StreamWriter sw = new StreamWriter(signaturePath, false, Encoding.Default))
+            using (StreamWriter sw = new StreamWriter(signaturePath, true, Encoding.Default))
             {
                 for (int i = 0; i <= 255; i++)
                 {
                     sw.WriteLine(signature[i]);
                 }
+                sw.Close();
             }
 
-            string[,] pubKey = MerkleTree.MerkleTreeMake(privateKeys);
+            string[,] pubKey = MerkleTree.MerkleTreeMake(privateKeys, keyNumber);
 
-            using (StreamWriter sw = new StreamWriter($"C:\\LamportSignature\\publicKey.txt", false, Encoding.Default))
-            {
-                for (int i = 0; i <= 255; i++)
-                {
-                    for (int j = 0; j <= 1; j++)
-                    {
-                        sw.Write(pubKey[i, j] + " | ");
-                    }
-                    sw.WriteLine();
-                }
-            }
+            //using (StreamWriter sw = new StreamWriter(signaturePath, true, Encoding.Default))
+            //{
+            //    for (int i = 0; i <= 255; i++)
+            //    {
+            //        for (int j = 0; j <= 1; j++)
+            //        {
+            //            sw.Write(pubKey[i, j] + " | ");
+            //        }
+            //        sw.WriteLine();
+            //    }
+            //}
 
             Console.WriteLine($"Your file is signed. All files are saved along the path: C:\\LamportSignature\n");
         }
@@ -230,7 +231,7 @@ namespace LamportSignature
 
             bitsArraySourceFile = new BitArray(sourceFile);
 
-            string[] readPublicKey = File.ReadAllLines($"C:\\LamportSignature\\publicKey.txt");
+            string[] topHash = File.ReadAllLines($"C:\\LamportSignature\\publicKey.txt");
             string[] readHashedKey = File.ReadAllLines($"C:\\LamportSignature\\hashedKey.txt");
             string[] readSignature = File.ReadAllLines($"C:\\LamportSignature\\signature.txt");
 
@@ -262,12 +263,21 @@ namespace LamportSignature
 
             if (conformitySourceFileFromPublicKey.SequenceEqual(publicKeyHash))
             {
-                Console.WriteLine("Signature verified.\n");
+                Console.WriteLine("Signature for file verified.\n");
+
+                if (CheckHash( publicKey, , topHash))
+                {
+                    Console.WriteLine("Validated in the block system.\n");
+                }
+                else
+                {
+                    Console.WriteLine("Validated not passed in the block system. =(\n");
+                }
             }
             else
             {
-                Console.WriteLine("Signature not verified. =(\n");
-            }
+                Console.WriteLine("Signature for file not verified. =(\n");
+            }         
         }
     }
 }
