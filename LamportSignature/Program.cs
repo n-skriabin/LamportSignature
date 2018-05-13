@@ -300,6 +300,7 @@ namespace LamportSignature
 
             if (conformitySourceFileFromPublicKey.SequenceEqual(publicKeyHash))
             {
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Signature for file verified.\n");
 
                 if (MerkleTree.CheckHash(publicKey, authList, topHash))
@@ -308,13 +309,17 @@ namespace LamportSignature
                 }
                 else
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Validated not passed in the block system. =(\n");
                 }
             }
             else
             {
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Signature for file not verified. =(\n");
-            }         
+            }
+
+            Console.ForegroundColor = ConsoleColor.White;
         }
     }
 }
