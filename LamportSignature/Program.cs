@@ -67,9 +67,14 @@ namespace LamportSignature
             Directory.CreateDirectory($"C:\\LamportSignature\\privateKeys");
             Directory.CreateDirectory($"C:\\LamportSignature\\hashedKeys");
 
+            Directory.CreateDirectory($"C:\\LamportSignature\\debug");
+
             string privateKeyPath = $"C:\\LamportSignature\\privateKey.txt";
             string publicKeyPath = $"C:\\LamportSignature\\publicKey.txt";
             string signaturePath = $"C:\\LamportSignature\\signature.txt";
+            string lineSeparated = $"--------------------------------------";
+
+            File.Delete(signaturePath);
 
             List<int> randomValues;
             Console.WriteLine("Generating random values...\n");
@@ -195,22 +200,11 @@ namespace LamportSignature
                 {
                     sw.WriteLine(signature[i]);
                 }
+                sw.WriteLine(lineSeparated);
                 sw.Close();
             }
 
-            string[,] pubKey = MerkleTree.MerkleTreeMake(privateKeys, keyNumber);
-
-            //using (StreamWriter sw = new StreamWriter(signaturePath, true, Encoding.Default))
-            //{
-            //    for (int i = 0; i <= 255; i++)
-            //    {
-            //        for (int j = 0; j <= 1; j++)
-            //        {
-            //            sw.Write(pubKey[i, j] + " | ");
-            //        }
-            //        sw.WriteLine();
-            //    }
-            //}
+            string[,] pubKey = MerkleTree.MerkleTreeMake(publicKeys, keyNumber);
 
             Console.WriteLine($"Your file is signed. All files are saved along the path: C:\\LamportSignature\n");
         }
@@ -220,6 +214,16 @@ namespace LamportSignature
             publicKey = new string[256, 2];
             string[] sign = new string[256];
             string[] publicKeyHash = new string[256];
+
+            string[] authNotParsed0 = new string[256];
+            string[] authNotParsed1 = new string[256];
+            string[] authNotParsed2 = new string[256];
+
+            string[,] auth0 = new string[256, 2];
+            string[,] auth1 = new string[256, 2];
+            string[,] auth2 = new string[256, 2];
+
+            List<string[,]> authList = new List<string[,]>();
 
             using (FileStream fstream = File.OpenRead($"C:\\LamportSignature\\sourceFile.txt"))
             {
@@ -231,9 +235,38 @@ namespace LamportSignature
 
             bitsArraySourceFile = new BitArray(sourceFile);
 
-            string[] topHash = File.ReadAllLines($"C:\\LamportSignature\\publicKey.txt");
+            string[,] topHash = new string[256,2];
             string[] readHashedKey = File.ReadAllLines($"C:\\LamportSignature\\hashedKey.txt");
             string[] readSignature = File.ReadAllLines($"C:\\LamportSignature\\signature.txt");
+
+            for (int i = 0; i <= 255; i++)
+            {
+                sign[i] = readSignature[i];
+
+                var bufferTopHash = readSignature[i + 257].Split(' ');
+
+                topHash[i, 0] = bufferTopHash[0];
+
+                topHash[i, 1] = bufferTopHash[2];
+
+                var buffer = readSignature[i+514].Split(' ');
+
+                auth0[i, 0] = buffer[0];
+
+                auth0[i, 1] = buffer[2];
+
+                buffer = readSignature[i + 771].Split(' ');
+
+                auth1[i, 0] = buffer[0];
+
+                auth1[i, 1] = buffer[2];
+
+                buffer = readSignature[i + 1028].Split(' ');
+
+                auth2[i, 0] = buffer[0];
+
+                auth2[i, 1] = buffer[2];
+            }
 
             for (int i = 0; i <= 255; i++)
             {
@@ -258,14 +291,18 @@ namespace LamportSignature
                     conformitySourceFileFromPublicKey[i] = publicKey[i, 1];
                 }
 
-                publicKeyHash[i] = readSignature[i].GetHashCode().ToString();
+                publicKeyHash[i] = sign[i].GetHashCode().ToString();
             }
+
+            authList.Add(auth0);
+            authList.Add(auth1);
+            authList.Add(auth2);
 
             if (conformitySourceFileFromPublicKey.SequenceEqual(publicKeyHash))
             {
                 Console.WriteLine("Signature for file verified.\n");
 
-                if (CheckHash( publicKey, , topHash))
+                if (MerkleTree.CheckHash(publicKey, authList, topHash))
                 {
                     Console.WriteLine("Validated in the block system.\n");
                 }
