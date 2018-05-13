@@ -214,13 +214,13 @@ namespace LamportSignature
                         for (int z = 0; z <= 1; z++)
                         {
                             byte[] buffer;
-                            if (keyNumber == 0 || keyNumber % 2 != 0)
+                            if (keyNumber != 1 && (keyNumber == 0 || keyNumber % 2 == 0))
                             {
                                 buffer = enc.GetBytes(pubKey[j, z] + item[j, z]);
                                 intermediateValuesFirst[j, z] = BitConverter.ToInt32(sha256.ComputeHash(buffer), 0).ToString();
                             }
                             else
-                            if (keyNumber == 1 || keyNumber % 2 == 0)
+                            if (keyNumber == 1 || keyNumber % 2 != 0)
                             {
                                 buffer = enc.GetBytes(item[j, z] + pubKey[j, z]);
                                 intermediateValuesFirst[j, z] = BitConverter.ToInt32(sha256.ComputeHash(buffer), 0).ToString();
