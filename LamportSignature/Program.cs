@@ -196,6 +196,7 @@ namespace LamportSignature
 
             using (StreamWriter sw = new StreamWriter(signaturePath, true, Encoding.Default))
             {
+               
                 for (int i = 0; i <= 255; i++)
                 {
                     sw.WriteLine(signature[i]);
@@ -238,6 +239,8 @@ namespace LamportSignature
             string[,] topHash = new string[256,2];
             string[] readHashedKey = File.ReadAllLines($"C:\\LamportSignature\\hashedKey.txt");
             string[] readSignature = File.ReadAllLines($"C:\\LamportSignature\\signature.txt");
+
+            int keyNumber = Convert.ToInt32(readSignature[readSignature.Length-1]);
 
             for (int i = 0; i <= 255; i++)
             {
@@ -303,7 +306,7 @@ namespace LamportSignature
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Signature for file verified.\n");
 
-                if (MerkleTree.CheckHash(publicKey, authList, topHash))
+                if (MerkleTree.CheckHash(publicKey, authList, topHash, keyNumber))
                 {
                     Console.WriteLine("Validated in the block system.\n");
                 }

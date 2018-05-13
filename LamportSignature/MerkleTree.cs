@@ -43,7 +43,6 @@ namespace LamportSignature
                 for (int j = 0; j <= 1; j++)
                 {
                     byte[] buffer = enc.GetBytes(publickKey1[i, j] + publickKey2[i, j]);
-                    //concatHashed1[i, j] = buffer.GetHashCode().ToString();
                     concatHashed1[i, j] = BitConverter.ToInt32(sha256.ComputeHash(buffer), 0).ToString();
                 }
             }
@@ -53,7 +52,6 @@ namespace LamportSignature
                 for (int j = 0; j <= 1; j++)
                 {
                     byte[] buffer = enc.GetBytes(publickKey3[i, j] + publickKey4[i, j]);
-                    //concatHashed2[i, j] = buffer.GetHashCode().ToString();
                     concatHashed2[i, j] = BitConverter.ToInt32(sha256.ComputeHash(buffer), 0).ToString();
                 }
             }
@@ -63,7 +61,6 @@ namespace LamportSignature
                 for (int j = 0; j <= 1; j++)
                 {
                     byte[] buffer = enc.GetBytes(publickKey5[i, j] + publickKey6[i, j]);
-                    //concatHashed3[i, j] = buffer.GetHashCode().ToString();
                     concatHashed3[i, j] = BitConverter.ToInt32(sha256.ComputeHash(buffer), 0).ToString();
                 }
             }
@@ -73,7 +70,6 @@ namespace LamportSignature
                 for (int j = 0; j <= 1; j++)
                 {
                     byte[] buffer = enc.GetBytes(publickKey7[i, j] + publickKey8[i, j]);
-                    //concatHashed4[i, j] = buffer.GetHashCode().ToString();
                     concatHashed4[i, j] = BitConverter.ToInt32(sha256.ComputeHash(buffer), 0).ToString();
                 }
             }
@@ -106,7 +102,6 @@ namespace LamportSignature
                 for (int j = 0; j <= 1; j++)
                 {
                     byte[] buffer = enc.GetBytes(concatHashed1[i, j] + concatHashed2[i, j]);
-                    //concatHashed11[i, j] = buffer.GetHashCode().ToString();
                     concatHashed11[i, j] = BitConverter.ToInt32(sha256.ComputeHash(buffer), 0).ToString();
                 }
             }
@@ -116,7 +111,6 @@ namespace LamportSignature
                 for (int j = 0; j <= 1; j++)
                 {
                     byte[] buffer = enc.GetBytes(concatHashed3[i, j] + concatHashed4[i, j]);
-                    //concatHashed22[i, j] = buffer.GetHashCode().ToString();
                     concatHashed22[i, j] = BitConverter.ToInt32(sha256.ComputeHash(buffer), 0).ToString();
                 }
             }
@@ -147,7 +141,6 @@ namespace LamportSignature
                 for (int j = 0; j <= 1; j++)
                 {
                     byte[] buffer = enc.GetBytes(concatHashed11[i, j] + concatHashed22[i, j]);
-                    //result[i, j] = buffer.GetHashCode().ToString();
                     result[i, j] = BitConverter.ToInt32(sha256.ComputeHash(buffer), 0).ToString();
                 }
             }
@@ -158,55 +151,55 @@ namespace LamportSignature
             {
                 WriteToFile(publickKey2);
                 WriteToFile(concatHashed2);
-                WriteToFile(concatHashed22);
+                WriteToFile(concatHashed22, keyNumber);
             }
             if (keyNumber == 1)
             {
                 WriteToFile(publickKey1);
                 WriteToFile(concatHashed2);
-                WriteToFile(concatHashed22);
+                WriteToFile(concatHashed22, keyNumber);
             }
             if (keyNumber == 2)
             {
                 WriteToFile(publickKey4);
                 WriteToFile(concatHashed1);
-                WriteToFile(concatHashed22);
+                WriteToFile(concatHashed22, keyNumber);
             }
             if (keyNumber == 3)
             {
                 WriteToFile(publickKey3);
                 WriteToFile(concatHashed1);
-                WriteToFile(concatHashed22);
+                WriteToFile(concatHashed22, keyNumber);
             }
             if (keyNumber == 4)
             {
                 WriteToFile(publickKey6);
                 WriteToFile(concatHashed4);
-                WriteToFile(concatHashed11);
+                WriteToFile(concatHashed11, keyNumber);
             }
             if (keyNumber == 5)
             {
                 WriteToFile(publickKey5);
                 WriteToFile(concatHashed4);
-                WriteToFile(concatHashed11);
+                WriteToFile(concatHashed11, keyNumber);
             }
             if (keyNumber == 6)
             {
                 WriteToFile(publickKey8);
                 WriteToFile(concatHashed3);
-                WriteToFile(concatHashed11);
+                WriteToFile(concatHashed11, keyNumber);
             }
             if (keyNumber == 7)
             {
                 WriteToFile(publickKey7);
                 WriteToFile(concatHashed3);
-                WriteToFile(concatHashed11);
+                WriteToFile(concatHashed11, keyNumber);
             }
 
             return result;
         }
 
-        public static bool CheckHash(string[,] pubKey, List<string[,]> authPath, string[,] topHash)
+        public static bool CheckHash(string[,] pubKey, List<string[,]> authPath, string[,] topHash, int keyNumber)
         {
             int i = 0;
             bool check = true;
@@ -220,28 +213,69 @@ namespace LamportSignature
                     {
                         for (int z = 0; z <= 1; z++)
                         {
-                            byte[] buffer = enc.GetBytes(pubKey[j, z] + item[j, z]);
-                            //intermediateValuesFirst[j, z] = buffer.GetHashCode().ToString();
-                            intermediateValuesFirst[j, z] = BitConverter.ToInt32(sha256.ComputeHash(buffer), 0).ToString();
+                            byte[] buffer;
+                            if (keyNumber == 0 || keyNumber % 2 != 0)
+                            {
+                                buffer = enc.GetBytes(pubKey[j, z] + item[j, z]);
+                                intermediateValuesFirst[j, z] = BitConverter.ToInt32(sha256.ComputeHash(buffer), 0).ToString();
+                            }
+                            else
+                            if (keyNumber == 1 || keyNumber % 2 == 0)
+                            {
+                                buffer = enc.GetBytes(item[j, z] + pubKey[j, z]);
+                                intermediateValuesFirst[j, z] = BitConverter.ToInt32(sha256.ComputeHash(buffer), 0).ToString();
+                            }
                         }
                     }
                 }
 
-                if (i != 0)
+                if (i == 1)
                 {
                     for (int j = 0; j <= 255; j++)
                     {
                         for (int z = 0; z <= 1; z++)
                         {
-                            byte[] buffer = enc.GetBytes(intermediateValuesFirst[j, z] + item[j, z]);
-                            //intermediateValuesSecond[j, z] = buffer.GetHashCode().ToString();
-                            intermediateValuesSecond[j, z] = BitConverter.ToInt32(sha256.ComputeHash(buffer), 0).ToString();
+                            if (keyNumber <= 1 || keyNumber >= 4 && keyNumber <= 5)
+                            {
+                                byte[] buffer = enc.GetBytes(intermediateValuesFirst[j, z] + item[j, z]);
+                                intermediateValuesSecond[j, z] = BitConverter.ToInt32(sha256.ComputeHash(buffer), 0).ToString();
+                            }
+                            else
+                            if (keyNumber >= 2 && keyNumber <= 3 || keyNumber >= 6 && keyNumber <= 7)
+                            {
+                                byte[] buffer = enc.GetBytes(item[j, z] + intermediateValuesFirst[j, z]);
+                                intermediateValuesSecond[j, z] = BitConverter.ToInt32(sha256.ComputeHash(buffer), 0).ToString();
+                            }
                         }
                     }
 
                     intermediateValuesFirst = intermediateValuesSecond;
                     intermediateValuesSecond = new string[256, 2];
-                }              
+                }
+
+                if (i == 2)
+                {
+                    for (int j = 0; j <= 255; j++)
+                    {
+                        for (int z = 0; z <= 1; z++)
+                        {
+                            if (keyNumber < 4)
+                            {
+                                byte[] buffer = enc.GetBytes(intermediateValuesFirst[j, z] + item[j, z]);
+                                intermediateValuesSecond[j, z] = BitConverter.ToInt32(sha256.ComputeHash(buffer), 0).ToString();
+                            }
+                            else
+                            if (keyNumber > 3)
+                            {
+                                byte[] buffer = enc.GetBytes(item[j, z] + intermediateValuesFirst[j, z]);
+                                intermediateValuesSecond[j, z] = BitConverter.ToInt32(sha256.ComputeHash(buffer), 0).ToString();
+                            }
+                        }
+                    }
+
+                    intermediateValuesFirst = intermediateValuesSecond;
+                    intermediateValuesSecond = new string[256, 2];
+                }
 
                 i++;
             }
@@ -260,7 +294,7 @@ namespace LamportSignature
             return check;
         }
 
-        public static void WriteToFile(string[,] input)
+        public static void WriteToFile(string[,] input, int? keyNumber = null)
         {
             using (StreamWriter sw = new StreamWriter($"C:\\LamportSignature\\signature.txt", true, Encoding.Default))
             {
@@ -273,6 +307,10 @@ namespace LamportSignature
                     sw.WriteLine();
                 }
                 sw.WriteLine(lineSeparated);
+                if(keyNumber != null)
+                {
+                    sw.WriteLine(keyNumber);
+                }
             }
         }
     }
